@@ -1,0 +1,4 @@
+sdk/
+.gradle/
+local.properties
+*.apk
