@@ -60,5 +60,184 @@ public class MainActivity extends Activity {
                         .putString("gemini_key", clave)
                         .apply();
 
-                estado.setText("API Key guardada");
+estado.setText("API Key guardada");
+hablarTexto("API Key guardada.");
+}
+});
+
+hablar.setOnClickListener(v -> escuchar());
+}
+
+private void escuchar()@Override
+protected void onActivityResult(
+        int requestCode,
+        int resultCode,
+        Intent data
+) {
+    super.onActivityResult(requestCode, resultCode, data);
+
+    if (requestCode == 100 &&
+            resultCode == RESULT_OK &&
+            data != null) {
+
+        ArrayList<String> resultados =
+                data.getStringArrayListExtra(
+                        RecognizerIntent.EXTRA_RESULTS
+                );
+
+        if (resultados != null && !resultados.isEmpty()) {
+
+            String texto = resultados.get(0);
+
+            estado.setText("Tú: " + texto);
+
+            preguntarGemini(texto);
+        }
+    }
+} {
+    estado.setText("🎤 Escuchando...");
+
+    Intent intent = new Intent(
+            RecognizerIntent.ACTION_RECOGNIZE_SPEECH
+    );
+
+    intent.putExtra(
+            RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+            RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
+    );
+
+    intent.putExtra(
+            RecognizerIntent.EXTRA_LANGUAGE,
+            "es-MX"
+    );
+
+    startActivityForResult(intent, 100);
+}
+private void preguntarGemini(String pregunta) {
+
+    String clave = preferencias.getString("gemini_key", "");
+
+    if (clave.isEmpty()) {
+        estado.setText("Falta la API Key");
+        hablarTexto("Primero necesitas guardar tu API Key de Gemini.");
+        return;
+    }
+
+    estado.setText("🧠 Zero está pensando...");
+
+    new Thread(() -> {
+        try {
+
+            String direccion =
+                    "https://generativelanguage.googleapis.com/v1beta/models/"
+                    + "gemini-3.5-flash-lite:generateContent?key="
+                    + clave;
+
+            URL url = new URL(direccion);
+
+            HttpURLConnection conexion =
+                    (HttpURLConnection) url.openConnection();
+
+            conexion.setRequestMethod("POST");
+            conexion.setRequestProperty(
+                    "Content-Type",
+                    "application/json"
+            );
+            conexion.setDoOutput(true);
+
+            JSONObject parte = new JSONObject();
+            parte.put(
+                    "text",
+                    "Tu nombre es Zero. "
+                    + "Eres un asistente personal. "
+                    + "Responde siempre en español "
+                    + "de forma natural y breve. "
+                    + "Usuario: " + pregunta
+            );
+
+            JSONArray partes = new JSONArray();
+            partes.put(parte);
+
+            JSONObject contenido = new JSONObject();
+            contenido.put("parts", partes);
+
+            JSONArray contenidos = new JSONArray();
+            contenidos.put(contenido);
+
+            JSONObject datos = new JSONObject();
+            datos.put("contents", contenidos);
+
+            OutputStream salida = conexion.getOutputStream();
+            salida.write(datos.toString().getBytes("UTF-8"));
+            salida.close();
+
+            BufferedReader lector =
+                    new BufferedReader(
+                            new InputStreamReader(
+                                    conexion.getInputStream()
+                            )
+                    );
+
+            StringBuilder respuesta =
+                    new StringBuilder();
+
+            String linea;
+
+            while ((linea = lector.readLine()) != null) {
+                respuesta.append(linea);
+            }
+
+            lector.close();
+
+            JSONObject resultado =
+                    new JSONObject(respuesta.toString());
+
+            String textoRespuesta =
+                    resultado
+                            .getJSONArray("candidates")
+                            .getJSONObject(0)
+                            .getJSONObject("content")
+                            .getJSONArray("parts")
+                            .getJSONObject(0)
+                            .getString("text");
+
+            runOnUiThread(() -> {
+                estado.setText("Zero: " + textoRespuesta);
+                hablarTexto(textoRespuesta);
+            });
+
+        } catch (Exception e) {
+
+            runOnUiThread(() -> {
+                estado.setText("Error con Gemini");
+                hablarTexto(
+                        "Tuve un problema al comunicarme con Gemini."
+                );
+            });
+        }
+    }).start();
+}
+private void hablarTexto(String texto) {
+
+    if (voz != null) {
+        voz.speak(
+                texto,
+                TextToSpeech.QUEUE_FLUSH,
+                null,
+                "zero"
+        );
+    }
+}
+
+@Override
+protected void onDestroy() {
+
+    if (voz != null) {
+        voz.stop();
+        voz.shutdown();
+    }
+
+    super.onDestroy();
+}
+}
                
