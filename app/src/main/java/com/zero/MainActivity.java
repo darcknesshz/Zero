@@ -275,5 +275,398 @@ public class MainActivity extends Activity {
                     lector =
                             new BufferedReader(
                                     new InputStreamReader(
-                                            conexion.getErrorStream()
+                                    conexion.getErrorStream()
+                            )
+                    );
+                }
 
+                StringBuilder respuesta =
+                        new StringBuilder();
+
+                String linea;
+
+                while ((linea =
+                        lector.readLine()) != null) {
+
+                    respuesta.append(linea);
+                }
+
+                lector.close();
+
+                if (codigo < 200 ||
+                        codigo >= 300) {
+
+                    throw new Exception(
+                            "Gemini HTTP " + codigo
+                    );
+                }
+
+                JSONObject resultado =
+                        new JSONObject(
+                                respuesta.toString()
+                        );
+
+                String textoRespuesta =
+                        resultado
+                                .getJSONArray("candidates")
+                                .getJSONObject(0)
+                                .getJSONObject("content")
+                                .getJSONArray("parts")
+                                .getJSONObject(0)
+                                .getString("text")
+                                .trim();
+
+                procesarRespuesta(textoRespuesta);
+
+            } catch (Exception e) {
+
+                runOnUiThread(() -> {
+
+                    estado.setText(
+                            "Error con Gemini"
+                    );
+
+                    hablarTexto(
+                            "Tuve un problema al comunicarme con Gemini."
+                    );
+                });
+            }
+
+        }).start();
+    }
+
+    private void procesarRespuesta(
+            String respuesta
+    ) {
+
+        runOnUiThread(() -> {
+
+            try {
+
+                String limpia =
+                        respuesta
+                                .replace("```json", "")
+                                .replace("```", "")
+                                .trim();
+
+                JSONObject orden =
+                        new JSONObject(limpia);
+
+                String accion =
+                        orden.optString(
+                                "accion",
+                                "RESPONDER"
+                        );
+
+                String dato =
+                        orden.optString(
+                                "dato",
+                                ""
+                        );
+
+                ejecutarAccion(
+                        accion,
+                        dato
+                );
+
+            } catch (Exception e) {
+
+                estado.setText(
+                        "Zero: " + respuesta
+                );
+
+                hablarTexto(respuesta);
+            }
+        });
+    }
+
+    private void ejecutarAccion(
+            String accion,
+            String dato
+    ) {
+
+        try {
+
+            switch (accion) {
+
+                case "ABRIR_YOUTUBE":
+                    abrirAplicacion(
+                            "com.google.android.youtube"
+                    );
+                    hablarTexto(
+                            "Abriendo YouTube."
+                    );
+                    break;
+
+                case "ABRIR_WHATSAPP":
+                    abrirAplicacion(
+                            "com.whatsapp"
+                    );
+                    hablarTexto(
+                            "Abriendo WhatsApp."
+                    );
+                    break;
+
+                case "ABRIR_CHROME":
+                    abrirAplicacion(
+                            "com.android.chrome"
+                    );
+                    hablarTexto(
+                            "Abriendo Chrome."
+                    );
+                    break;
+
+                case "ABRIR_GOOGLE":
+                    abrirWeb(
+                            "https://www.google.com"
+                    );
+                    hablarTexto(
+                            "Abriendo Google."
+                    );
+                    break;
+
+                case "ABRIR_AJUSTES":
+                    startActivity(
+                            new Intent(
+                                    Settings.ACTION_SETTINGS
+                            )
+                    );
+                    hablarTexto(
+                            "Abriendo ajustes."
+                    );
+                    break;
+
+                case "ABRIR_WIFI":
+                    startActivity(
+                            new Intent(
+                                    Settings.ACTION_WIFI_SETTINGS
+                            )
+                    );
+                    hablarTexto(
+                            "Abriendo configuración de Wi-Fi."
+                    );
+                    break;
+
+                case "ABRIR_BLUETOOTH":
+                    startActivity(
+                            new Intent(
+                                    Settings.ACTION_BLUETOOTH_SETTINGS
+                            )
+                    );
+                    hablarTexto(
+                            "Abriendo Bluetooth."
+                    );
+                    break;
+
+                case "ABRIR_WEB":
+                    abrirWeb(dato);
+                    hablarTexto(
+                            "Abriendo la página."
+                    );
+                    break;
+
+                case "VOLUMEN_MAS":
+                    cambiarVolumen(
+                            AudioManager.ADJUST_RAISE
+                    );
+                    hablarTexto(
+                            "Subiendo volumen."
+                    );
+                    break;
+
+                case "VOLUMEN_MENOS":
+                    cambiarVolumen(
+                            AudioManager.ADJUST_LOWER
+                    );
+                    hablarTexto(
+                            "Bajando volumen."
+                    );
+                    break;
+
+                case "SILENCIO":
+                    cambiarVolumen(
+                            AudioManager.ADJUST_MUTE
+                    );
+                    hablarTexto(
+                            "Silenciando."
+                    );
+                    break;
+
+                case "LINterna":
+                    encenderLinterna();
+                    break;
+
+                case "LLAMAR":
+                    llamar(dato);
+                    break;
+
+                default:
+                    estado.setText(
+                            "Zero: " + dato
+                    );
+                    hablarTexto(dato);
+                    break;
+            }
+
+        } catch (Exception e) {
+
+            estado.setText(
+                    "No pude ejecutar la acción."
+            );
+
+            hablarTexto(
+                    "No pude ejecutar esa acción."
+            );
+        }
+    }
+
+    private void abrirAplicacion(
+            String paquete
+    ) {
+
+        Intent intent =
+                getPackageManager()
+                        .getLaunchIntentForPackage(
+                                paquete
+                        );
+
+        if (intent != null) {
+
+            startActivity(intent);
+
+        } else {
+
+            hablarTexto(
+                    "No encontré esa aplicación."
+            );
+        }
+    }
+
+    private void abrirWeb(
+            String direccion
+    ) {
+
+        if (direccion == null ||
+                direccion.trim().isEmpty()) {
+
+            return;
+        }
+
+        if (!direccion.startsWith("http://") &&
+                !direccion.startsWith("https://")) {
+
+            direccion =
+                    "https://" + direccion;
+        }
+
+        Intent intent =
+                new Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse(direccion)
+                );
+
+        startActivity(intent);
+    }
+
+    private void cambiarVolumen(
+            int direccion
+    ) {
+
+        AudioManager audio =
+                (AudioManager)
+                        getSystemService(
+                                Context.AUDIO_SERVICE
+                        );
+
+        audio.adjustVolume(
+                direccion,
+                AudioManager.FLAG_SHOW_UI
+        );
+    }
+
+    private void encenderLinterna() {
+
+        try {
+
+            CameraManager camera =
+                    (CameraManager)
+                            getSystemService(
+                                    Context.CAMERA_SERVICE
+                            );
+
+            String camara =
+                    camera.getCameraIdList()[0];
+
+            camera.setTorchMode(
+                    camara,
+                    true
+            );
+
+            hablarTexto(
+                    "Linterna encendida."
+            );
+
+        } catch (Exception e) {
+
+            hablarTexto(
+                    "No pude controlar la linterna."
+            );
+        }
+    }
+
+    private void llamar(
+            String numero
+    ) {
+
+        if (numero == null ||
+                numero.trim().isEmpty()) {
+
+            hablarTexto(
+                    "Necesito un número para llamar."
+            );
+
+            return;
+        }
+
+        Intent intent =
+                new Intent(
+                        Intent.ACTION_DIAL,
+                        Uri.parse(
+                                "tel:" + numero
+                        )
+                );
+
+        startActivity(intent);
+
+        hablarTexto(
+                "Abriendo el teléfono."
+        );
+    }
+
+    private void hablarTexto(
+            String texto
+    ) {
+
+        if (voz != null) {
+
+            voz.speak(
+                    texto,
+                    TextToSpeech.QUEUE_FLUSH,
+                    null,
+                    "zero"
+            );
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+
+        if (voz != null) {
+
+            voz.stop();
+            voz.shutdown();
+        }
+
+        super.onDestroy();
+    }
+}
