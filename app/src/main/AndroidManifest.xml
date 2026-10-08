@@ -8,6 +8,8 @@
     </intent>
 </queries>
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+<uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
 <uses-permission android:name="android.permission.INTERNET" />
     <application
         android:theme="@style/AppTheme"
@@ -25,7 +27,10 @@
             </intent-filter>
 
         </activity>
-
+<service
+    android:name=".ZeroService"
+    android:exported="false"
+    android:foregroundServiceType="microphone" />
     </application>
 
 </manifest>
