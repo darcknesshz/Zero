@@ -49,6 +49,7 @@ public class MainActivity extends Activity {
             if (status == TextToSpeech.SUCCESS) {
                 voz.setLanguage(new Locale("es", "MX"));
                 voz.setSpeechRate(0.9f);
+voz.setPitch(0.75f);
             }
         });
 
