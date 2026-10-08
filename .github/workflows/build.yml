@@ -19,20 +19,12 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Configurar Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Instalar SDK
-        run: |
-          yes | sdkmanager --licenses
-          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
-
-      - name: Instalar Gradle
+      - name: Compilar APK
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.8.1'
 
-      - name: Compilar APK
+      - name: Construir Zero
         run: gradle assembleDebug
 
       - name: Guardar APK
