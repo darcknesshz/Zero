@@ -134,7 +134,7 @@ protected void onActivityResult(
 
     startActivityForResult(intent, 100);
 }
-@Override
+
 private void preguntarGemini(String pregunta) {
 
     String clave = preferencias.getString("gemini_key", "");
