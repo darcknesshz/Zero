@@ -191,6 +191,9 @@ public class MainActivity extends Activity {
                         + "ABRIR_YOUTUBE, "
                         + "ABRIR_WHATSAPP, "
                         + "ABRIR_CHROME, "
++ "ABRIR_APP, "
++ "Para ABRIR_WEB, dato debe ser la dirección web. "
++ "Para ABRIR_APP, dato debe contener exactamente el nombre de la aplicación que el usuario quiere abrir. "
                         + "ABRIR_GOOGLE, "
                         + "ABRIR_AJUSTES, "
                         + "ABRIR_WIFI, "
@@ -400,7 +403,9 @@ case "ABRIR_WHATSAPP":
 case "ABRIR_CHROME":
     abrirAplicacionPorNombre("Chrome");
     break;
-
+case "ABRIR_APP":
+    abrirAplicacionPorNombre(dato);
+    break;
                 case "ABRIR_GOOGLE":
                     abrirWeb(
                             "https://www.google.com"
