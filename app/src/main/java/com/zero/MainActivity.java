@@ -68,7 +68,28 @@ hablarTexto("API Key guardada.");
 hablar.setOnClickListener(v -> escuchar());
 }
 
-private void escuchar()@Override
+private void escuchar() {
+    estado.setText("🎤 Escuchando...");
+
+    Intent intent = new Intent(
+            RecognizerIntent.ACTION_RECOGNIZE_SPEECH
+    );
+
+    intent.putExtra(
+            RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+            RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
+    );
+
+    intent.putExtra(
+            RecognizerIntent.EXTRA_LANGUAGE,
+            "es-MX"
+    );
+
+    startActivityForResult(intent, 100);
+}
+
+@Override
+
 protected void onActivityResult(
         int requestCode,
         int resultCode,
