@@ -400,10 +400,6 @@ case "ABRIR_WHATSAPP":
 case "ABRIR_CHROME":
     abrirAplicacionPorNombre("Chrome");
     break;
-                    hablarTexto(
-                            "Abriendo Chrome."
-                    );
-                    break;
 
                 case "ABRIR_GOOGLE":
                     abrirWeb(
