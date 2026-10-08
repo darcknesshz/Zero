@@ -38,7 +38,9 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
-
+startForegroundService(
+        new Intent(this, ZeroService.class)
+);
         estado = findViewById(R.id.estado);
         apiKey = findViewById(R.id.apiKey);
 
