@@ -389,24 +389,17 @@ public class MainActivity extends Activity {
 
             switch (accion) {
 
-                case "ABRIR_YOUTUBE":
-                    abrirAplicacion(
-                            "com.google.android.youtube"
-                    );
-                    hablarTexto(
-                            "Abriendo YouTube."
-                    );
-                    break;
+case "ABRIR_YOUTUBE":
+    abrirAplicacionPorNombre("YouTube");
+    break;
 
-                case "ABRIR_WHATSAPP":
-                    abrirAplicacion(
-                            "com.whatsapp"
-                    );
-                    hablarTexto(
-                            "Abriendo WhatsApp."
-                    );
-                    break;
+case "ABRIR_WHATSAPP":
+    abrirAplicacionPorNombre("WhatsApp");
+    break;
 
+case "ABRIR_CHROME":
+    abrirAplicacionPorNombre("Chrome");
+    break;
                 case "ABRIR_CHROME":
                     abrirAplicacion(
                             "com.android.chrome"
@@ -541,7 +534,41 @@ public class MainActivity extends Activity {
             );
         }
     }
+private void abrirAplicacionPorNombre(String nombre) {
 
+    android.content.pm.PackageManager pm =
+            getPackageManager();
+
+    java.util.List<android.content.pm.ApplicationInfo> aplicaciones =
+            pm.getInstalledApplications(
+                    android.content.pm.PackageManager.GET_META_DATA
+            );
+
+    for (android.content.pm.ApplicationInfo app : aplicaciones) {
+
+        String nombreApp =
+                pm.getApplicationLabel(app)
+                        .toString();
+
+        if (nombreApp.equalsIgnoreCase(nombre)) {
+
+            Intent intent =
+                    pm.getLaunchIntentForPackage(
+                            app.packageName
+                    );
+
+            if (intent != null) {
+
+                startActivity(intent);
+                return;
+            }
+        }
+    }
+
+    hablarTexto(
+            "No encontré la aplicación " + nombre
+    );
+}
     private void abrirWeb(
             String direccion
     ) {
