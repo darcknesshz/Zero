@@ -400,10 +400,6 @@ case "ABRIR_WHATSAPP":
 case "ABRIR_CHROME":
     abrirAplicacionPorNombre("Chrome");
     break;
-                case "ABRIR_CHROME":
-                    abrirAplicacion(
-                            "com.android.chrome"
-                    );
                     hablarTexto(
                             "Abriendo Chrome."
                     );
